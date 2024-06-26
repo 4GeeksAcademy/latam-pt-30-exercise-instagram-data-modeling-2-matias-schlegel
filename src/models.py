@@ -1,32 +1,87 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import create_engine
 from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
+class User(Base):
+    __tablename__ = "user"
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
+    last_name = Column(String(250), nullable=False)
+    username = Column(String(50), unique=True, nullable=False)
+    bio = Column(String(150), nullable=True)
+    email = Column(String(250), unique=True, nullable=False)
+    password = Column(String(250), nullable=False)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+    # Relación con Story (user es el padre)
+    story = relationship("Story", back_populates="user")
+
+    # Relación con Post (user es el padre)
+    post = relationship("Post", back_populates="user")
+
+class Story(Base):
+    __tablename__ = "story"
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    image_url = Column(String(520), nullable=False)
+    time = Column(DateTime, nullable=False)
+    auto_delete_24hs = Column(DateTime, nullable=False)
 
-    def to_dict(self):
-        return {}
+    # Relación con Story (story es el hijo)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", back_populates = "stories")
+    
+class Post(Base):
+    __tablename__ = "post"
+    id = Column(Integer, primary_key=True)
+    image_url = Column(String(520), nullable=False)
+    bio = Column(String(100), nullable=True)
+    time = Column(DateTime, nullable=False)
+
+    # Relación con Post (post es el hijo)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", back_populates = "posts")
+
+    # Relación con like, saved y comment (post es el padre)
+    like = relationship("Like", back_populates="post")
+    saved = relationship("Saved", back_populates="post")
+    comment = relationship("Comment", back_populates="post")
+
+
+class Like(Base):
+    __tablename__ = "like"
+    id = Column(Integer, primary_key=True)
+    time = Column(DateTime, nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    post_id = Column(Integer, ForeignKey('post.id'))
+
+    # Relación con post (like es el hijo)
+    post = relationship("Post", back_populates = "likes")
+    
+class Saved(Base):
+    __tablename__ = "saved"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    post_id = Column(Integer, ForeignKey('post.id'))
+
+    # Relación con post (saved es el hijo)
+    post = relationship("Post", back_populates = "saved_posts")
+
+class Comment(Base):
+    __tablename__ = "comment"
+    id = Column(Integer, primary_key=True)
+    time = Column(DateTime, nullable=False)
+    text = Column(String(120), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    post_id = Column(Integer, ForeignKey('post.id'))
+
+    # Relación con post (comment es el hijo)
+    post = relationship("Post", back_populates = "comments")
+
+
 
 ## Draw from SQLAlchemy base
 try:
