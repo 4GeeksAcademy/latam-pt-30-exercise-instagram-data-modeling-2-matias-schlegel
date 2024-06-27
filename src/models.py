@@ -18,10 +18,10 @@ class User(Base):
     password = Column(String(250), nullable=False)
 
     # Relación con Story (user es el padre)
-    story = relationship("Story", back_populates="user")
+    stories = relationship("Story", back_populates="user")
 
     # Relación con Post (user es el padre)
-    post = relationship("Post", back_populates="user")
+    posts = relationship("Post", back_populates="user")
 
 class Story(Base):
     __tablename__ = "story"
@@ -46,9 +46,9 @@ class Post(Base):
     user = relationship("User", back_populates = "posts")
 
     # Relación con like, saved y comment (post es el padre)
-    like = relationship("Like", back_populates="post")
-    saved = relationship("Saved", back_populates="post")
-    comment = relationship("Comment", back_populates="post")
+    likes = relationship("Like", back_populates="post")
+    saved_posts = relationship("Saved", back_populates="post")
+    comments = relationship("Comment", back_populates="post")
 
 
 class Like(Base):
@@ -90,3 +90,4 @@ try:
 except Exception as e:
     print("There was a problem genering the diagram")
     raise e
+
